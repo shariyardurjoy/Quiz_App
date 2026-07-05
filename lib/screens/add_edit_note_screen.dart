@@ -28,6 +28,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   String _selectedCategory = 'General';
+  bool _isPinned = false;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
         TextEditingController(text: widget.note?.description ?? '');
     if (widget.note != null) {
       _selectedCategory = widget.note!.category;
+      _isPinned = widget.note!.isPinned;
     }
   }
 
@@ -55,7 +57,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         category: _selectedCategory,
-        isPinned: false,
+        isPinned: _isPinned,
       );
       await _service.createNote(note);
     } else {
@@ -64,7 +66,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         category: _selectedCategory,
-        isPinned: widget.note?.isPinned ?? false,
+        isPinned: _isPinned,
       );
       await _service.updateNote(note);
     }
@@ -73,16 +75,56 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
     Navigator.pop(context);
   }
 
+  static const List<String> _monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
+
+  String _formatDateTime(DateTime? date) {
+    if (date == null) return 'N/A';
+    final day = date.day.toString().padLeft(2, '0');
+    final month = _monthNames[date.month - 1];
+    final year = date.year.toString();
+    final hour24 = date.hour;
+    final hour12Raw = hour24 % 12;
+    final hour12 = hour12Raw == 0 ? 12 : hour12Raw;
+    final minute = date.minute.toString().padLeft(2, '0');
+    final period = hour24 < 12 ? 'AM' : 'PM';
+    return '$day $month $year, $hour12:$minute $period';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.note != null;
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Note' : 'Add Note'),
+        actions: [
+          IconButton(
+            icon: Icon(_isPinned ? Icons.push_pin : Icons.push_pin_outlined),
+            tooltip: _isPinned ? 'Unpin Note' : 'Pin Note',
+            onPressed: () {
+              setState(() {
+                _isPinned = !_isPinned;
+              });
+            },
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Form(
           key: _formKey,
           child: Column(
@@ -93,7 +135,9 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Title',
                   border: OutlineInputBorder(),
+                  isDense: true,
                 ),
+                style: theme.textTheme.titleMedium,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Title cannot be empty';
@@ -101,29 +145,13 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
-                ),
-                minLines: 3,
-                maxLines: null,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Description cannot be empty';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Category',
                   border: OutlineInputBorder(),
+                  isDense: true,
                 ),
                 items: categories
                     .map(
@@ -146,10 +174,55 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+                minLines: 5,
+                maxLines: null,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Description cannot be empty';
+                  }
+                  return null;
+                },
+              ),
+              if (isEditing) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Created: ${_formatDateTime(widget.note!.createdAt)}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Last Updated: ${_formatDateTime(widget.note!.updatedAt)}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
-              ElevatedButton(
+              FilledButton(
                 onPressed: _onSave,
-                child: const Text('Save'),
+                child: Text(isEditing ? 'Save Changes' : 'Create Note'),
               ),
             ],
           ),

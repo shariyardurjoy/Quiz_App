@@ -155,6 +155,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Icons.note_alt_outlined,
                                 title: 'Total Notes',
                                 value: '$total',
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const NotesListScreen(
+                                        initialCategory: 'All',
+                                        initialSort: SortOption.newest,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                             SizedBox(
@@ -163,6 +174,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Icons.push_pin_outlined,
                                 title: 'Pinned Notes',
                                 value: '$pinned',
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const NotesListScreen(
+                                        initialCategory: 'Pinned',
+                                        initialSort: SortOption.newest,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                             SizedBox(
@@ -171,6 +193,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Icons.category_outlined,
                                 title: 'Categories',
                                 value: '$categories',
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const NotesListScreen(
+                                        initialCategory: 'All',
+                                        initialSort: SortOption.newest,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                             SizedBox(
@@ -179,6 +212,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Icons.archive_outlined,
                                 title: 'Archived Notes',
                                 value: '$recentlyUpdated',
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const NotesListScreen(
+                                        initialCategory: 'All',
+                                        initialSort: SortOption.newest,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ],
@@ -319,11 +363,13 @@ class _StatCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
+    this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String value;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -334,39 +380,43 @@ class _StatCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: colorScheme.onPrimaryContainer,
+                  size: 22,
+                ),
               ),
-              child: Icon(
-                icon,
-                color: colorScheme.onPrimaryContainer,
-                size: 22,
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 2),
+              Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              title,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
