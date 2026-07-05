@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/note.dart';
 import '../services/firestore_service.dart';
+import 'note_details_screen.dart';
 
 class NotesListScreen extends StatefulWidget {
   const NotesListScreen({super.key});
@@ -66,6 +67,16 @@ class _NotesListScreenState extends State<NotesListScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(note.description),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => NoteDetailsScreen(
+                          note: note,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               );
             },
