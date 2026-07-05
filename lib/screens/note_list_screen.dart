@@ -16,6 +16,8 @@ const List<String> filterCategories = [
   'Shopping',
 ];
 
+enum SortOption { newest, oldest, titleAsc, titleDesc }
+
 class NotesListScreen extends StatefulWidget {
   const NotesListScreen({super.key});
 
@@ -31,6 +33,7 @@ class _NotesListScreenState extends State<NotesListScreen> {
   bool _isSearching = false;
   String _query = '';
   String _selectedCategory = 'All';
+  SortOption _sortOption = SortOption.newest;
 
   @override
   void initState() {
@@ -63,6 +66,53 @@ class _NotesListScreenState extends State<NotesListScreen> {
         ? notes
         : notes.where((n) => n.category == _selectedCategory).toList();
     return _filter(byCategory, _query);
+  }
+
+  List<Note> _applySort(List<Note> notes) {
+    final sorted = List<Note>.from(notes);
+    switch (_sortOption) {
+      case SortOption.newest:
+        sorted.sort((a, b) => b.id!.compareTo(a.id!));
+        break;
+      case SortOption.oldest:
+        sorted.sort((a, b) => a.id!.compareTo(b.id!));
+        break;
+      case SortOption.titleAsc:
+        sorted.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
+        break;
+      case SortOption.titleDesc:
+        sorted.sort(
+          (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+        );
+        break;
+    }
+    return sorted;
+  }
+
+  PopupMenuItem<SortOption> _buildSortMenuItem(
+    BuildContext context, {
+    required SortOption value,
+    required String label,
+  }) {
+    final isSelected = _sortOption == value;
+    return PopupMenuItem<SortOption>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(
+            isSelected ? Icons.check : Icons.check_box_outline_blank,
+            size: 18,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.transparent,
+          ),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+    );
   }
 
   Future<void> _confirmDelete(Note note) async {
@@ -99,6 +149,37 @@ class _NotesListScreenState extends State<NotesListScreen> {
       appBar: AppBar(
         title: const Text('Notes'),
         actions: [
+          PopupMenuButton<SortOption>(
+            tooltip: 'Sort',
+            icon: const Icon(Icons.sort),
+            onSelected: (value) {
+              setState(() {
+                _sortOption = value;
+              });
+            },
+            itemBuilder: (context) => [
+              _buildSortMenuItem(
+                context,
+                value: SortOption.newest,
+                label: 'Newest First',
+              ),
+              _buildSortMenuItem(
+                context,
+                value: SortOption.oldest,
+                label: 'Oldest First',
+              ),
+              _buildSortMenuItem(
+                context,
+                value: SortOption.titleAsc,
+                label: 'Title (A–Z)',
+              ),
+              _buildSortMenuItem(
+                context,
+                value: SortOption.titleDesc,
+                label: 'Title (Z–A)',
+              ),
+            ],
+          ),
           IconButton(
             tooltip: _isSearching ? 'Close search' : 'Search',
             icon: Icon(_isSearching ? Icons.close : Icons.search),
@@ -178,7 +259,7 @@ class _NotesListScreenState extends State<NotesListScreen> {
                   return const Center(child: Text('No notes yet'));
                 }
 
-                final filteredNotes = _applyFilters(notes);
+                final filteredNotes = _applySort(_applyFilters(notes));
 
                 if (filteredNotes.isEmpty) {
                   final message = _selectedCategory == 'All'
