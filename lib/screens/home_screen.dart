@@ -115,16 +115,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // Stat counts
                 final total = notes.length;
-                final pinned =
-                    notes.where((n) => n.isPinned).length;
+                final pinned = notes.where((n) => n.isPinned).length;
                 const archived = 0; // archive support not yet in the data model
                 final categories = <String>{
                   for (final n in notes) n.category,
                 }.length;
 
                 // Recent activity: 5 most-recently-updated notes
-                final recent = [...notes]
-                  ..sort((a, b) {
+                final recent = [...notes]..sort((a, b) {
                     final ad = a.updatedAt;
                     final bd = b.updatedAt;
                     if (ad == null && bd == null) return 0;
@@ -141,8 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     LayoutBuilder(
                       builder: (context, constraints) {
                         const spacing = 12.0;
-                        final tileWidth =
-                            (constraints.maxWidth - spacing) / 2;
+                        final tileWidth = (constraints.maxWidth - spacing) / 2;
                         return Wrap(
                           spacing: spacing,
                           runSpacing: spacing,
@@ -207,8 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               )
                             : Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.stretch,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   for (var i = 0;
                                       i < recentFive.length;
