@@ -64,8 +64,7 @@ class HomeScreen extends StatelessWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 const spacing = 12.0;
-                final tileWidth =
-                    (constraints.maxWidth - spacing) / 2;
+                final tileWidth = (constraints.maxWidth - spacing) / 2;
                 return Wrap(
                   spacing: spacing,
                   runSpacing: spacing,
