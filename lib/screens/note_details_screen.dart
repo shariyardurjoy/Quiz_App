@@ -4,10 +4,23 @@ import '../models/note.dart';
 import '../services/firestore_service.dart';
 import 'add_edit_note_screen.dart';
 
-class NoteDetailsScreen extends StatelessWidget {
+class NoteDetailsScreen extends StatefulWidget {
   final Note note;
 
   const NoteDetailsScreen({super.key, required this.note});
+
+  @override
+  State<NoteDetailsScreen> createState() => _NoteDetailsScreenState();
+}
+
+class _NoteDetailsScreenState extends State<NoteDetailsScreen> {
+  late Note _currentNote;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentNote = widget.note;
+  }
 
   Future<void> _confirmAndDelete(BuildContext context) async {
     final shouldDelete = await showDialog<bool>(
@@ -35,7 +48,7 @@ class NoteDetailsScreen extends StatelessWidget {
     if (shouldDelete != true) return;
 
     final service = FirestoreService();
-    await service.deleteNote(note.id!);
+    await service.deleteNote(_currentNote.id!);
 
     if (!context.mounted) return;
     Navigator.pop(context);
@@ -45,9 +58,27 @@ class NoteDetailsScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => AddEditNoteScreen(note: note),
+        builder: (_) => AddEditNoteScreen(note: _currentNote),
       ),
     );
+  }
+
+  Future<void> _togglePin(BuildContext context) async {
+    final firestoreService = FirestoreService();
+    final updatedNote = Note(
+      id: _currentNote.id,
+      title: _currentNote.title,
+      description: _currentNote.description,
+      category: _currentNote.category,
+      createdAt: _currentNote.createdAt,
+      updatedAt: _currentNote.updatedAt,
+      isPinned: !_currentNote.isPinned,
+    );
+    await firestoreService.updateNote(updatedNote);
+    if (!context.mounted) return;
+    setState(() {
+      _currentNote = updatedNote;
+    });
   }
 
   static const List<String> _monthNames = [
@@ -118,6 +149,18 @@ class NoteDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Note Details'),
+        actions: [
+          IconButton(
+            tooltip:
+                _currentNote.isPinned ? 'Unpin note' : 'Pin note',
+            icon: Icon(
+              _currentNote.isPinned
+                  ? Icons.push_pin
+                  : Icons.push_pin_outlined,
+            ),
+            onPressed: () => _togglePin(context),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -135,7 +178,7 @@ class NoteDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      note.title,
+                      _currentNote.title,
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -143,7 +186,7 @@ class NoteDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      note.description,
+                      _currentNote.description,
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],
@@ -156,12 +199,12 @@ class NoteDetailsScreen extends StatelessWidget {
             _metaRow(
               context,
               label: 'Created',
-              value: _formatDateTime(note.createdAt),
+              value: _formatDateTime(_currentNote.createdAt),
             ),
             _metaRow(
               context,
               label: 'Last updated',
-              value: _formatDateTime(note.updatedAt),
+              value: _formatDateTime(_currentNote.updatedAt),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(

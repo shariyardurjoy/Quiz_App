@@ -55,6 +55,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         category: _selectedCategory,
+        isPinned: false,
       );
       await _service.createNote(note);
     } else {
@@ -63,6 +64,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         category: _selectedCategory,
+        isPinned: widget.note?.isPinned ?? false,
       );
       await _service.updateNote(note);
     }
