@@ -68,9 +68,10 @@ class _NotesListScreenState extends State<NotesListScreen> {
         ? notes.where((n) => n.isPinned).toList()
         : notes;
 
-    final byCategory = _selectedCategory == 'All' || _selectedCategory == 'Pinned'
-        ? byPin
-        : byPin.where((n) => n.category == _selectedCategory).toList();
+    final byCategory =
+        _selectedCategory == 'All' || _selectedCategory == 'Pinned'
+            ? byPin
+            : byPin.where((n) => n.category == _selectedCategory).toList();
     return _filter(byCategory, _query);
   }
 

@@ -21,6 +21,15 @@ class FirestoreService {
     });
   }
 
+  Stream<Note> getNote(String id) {
+    return notesCollection.doc(id).snapshots().map((doc) {
+      if (!doc.exists) {
+        throw StateError('Note $id does not exist.');
+      }
+      return Note.fromMap(doc);
+    });
+  }
+
   Future<void> updateNote(Note note) async {
     final data = note.toMap();
     data.remove('createdAt');
