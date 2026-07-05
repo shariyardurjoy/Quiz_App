@@ -7,7 +7,10 @@ class FirestoreService {
       FirebaseFirestore.instance.collection('notes');
 
   Future<void> createNote(Note note) async {
-    await notesCollection.add(note.toMap());
+    final data = note.toMap();
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await notesCollection.add(data);
   }
 
   Stream<List<Note>> getNotes() {
@@ -19,7 +22,10 @@ class FirestoreService {
   }
 
   Future<void> updateNote(Note note) async {
-    await notesCollection.doc(note.id).update(note.toMap());
+    final data = note.toMap();
+    data.remove('createdAt');
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await notesCollection.doc(note.id).update(data);
   }
 
   Future<void> deleteNote(String id) async {
