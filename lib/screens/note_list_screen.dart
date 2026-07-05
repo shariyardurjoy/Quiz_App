@@ -70,32 +70,29 @@ class _NotesListScreenState extends State<NotesListScreen> {
 
   List<Note> _applySort(List<Note> notes) {
     final sorted = List<Note>.from(notes);
-    switch (_sortOption) {
-      case SortOption.newest:
-        sorted.sort((a, b) {
+    sorted.sort((a, b) {
+      // Tier 1: pinned notes always before unpinned notes.
+      final aPinned = a.isPinned ? 1 : 0;
+      final bPinned = b.isPinned ? 1 : 0;
+      final pinCompare = bPinned - aPinned;
+      if (pinCompare != 0) return pinCompare;
+
+      // Tier 2: within the same pin group, preserve the user's selected sort.
+      switch (_sortOption) {
+        case SortOption.newest:
           final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
           final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
           return bTime.compareTo(aTime);
-        });
-        break;
-      case SortOption.oldest:
-        sorted.sort((a, b) {
+        case SortOption.oldest:
           final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
           final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
           return aTime.compareTo(bTime);
-        });
-        break;
-      case SortOption.titleAsc:
-        sorted.sort(
-          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-        );
-        break;
-      case SortOption.titleDesc:
-        sorted.sort(
-          (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
-        );
-        break;
-    }
+        case SortOption.titleAsc:
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        case SortOption.titleDesc:
+          return b.title.toLowerCase().compareTo(a.title.toLowerCase());
+      }
+    });
     return sorted;
   }
 
@@ -338,9 +335,27 @@ class _NotesListScreenState extends State<NotesListScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
-                        title: Text(
-                          note.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        title: Row(
+                          children: [
+                            if (note.isPinned) ...[
+                              Icon(
+                                Icons.push_pin,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            Expanded(
+                              child: Text(
+                                note.title,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                         subtitle: Builder(
                           builder: (context) {
