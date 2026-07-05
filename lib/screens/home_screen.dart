@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'notes_list_screen.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -39,18 +41,25 @@ class HomeScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _QuickActionButton(
                       icon: Icons.description_outlined,
                       label: 'View All Notes',
-                      onPressed: null,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const NotesListScreen(),
+                          ),
+                        );
+                      },
                     ),
-                    SizedBox(height: 12),
-                    _QuickActionButton(
+                    const SizedBox(height: 12),
+                    const _QuickActionButton(
                       icon: Icons.add_circle_outline,
                       label: 'Create New Note',
                       onPressed: null,
