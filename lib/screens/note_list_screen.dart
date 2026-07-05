@@ -72,10 +72,18 @@ class _NotesListScreenState extends State<NotesListScreen> {
     final sorted = List<Note>.from(notes);
     switch (_sortOption) {
       case SortOption.newest:
-        sorted.sort((a, b) => b.id!.compareTo(a.id!));
+        sorted.sort((a, b) {
+          final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+          return bTime.compareTo(aTime);
+        });
         break;
       case SortOption.oldest:
-        sorted.sort((a, b) => a.id!.compareTo(b.id!));
+        sorted.sort((a, b) {
+          final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+          return aTime.compareTo(bTime);
+        });
         break;
       case SortOption.titleAsc:
         sorted.sort(
@@ -89,6 +97,54 @@ class _NotesListScreenState extends State<NotesListScreen> {
         break;
     }
     return sorted;
+  }
+
+  static const List<String> _monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  String _formatRelativeTime(DateTime? date) {
+    if (date == null) return '';
+    final now = DateTime.now();
+    final diff = now.difference(date);
+
+    if (diff.inSeconds < 0) {
+      // Future-timestamp safety: clock skew or server vs device clock.
+      return 'Just now';
+    }
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) {
+      final m = diff.inMinutes;
+      return '$m ${m == 1 ? 'minute' : 'minutes'} ago';
+    }
+    if (diff.inHours < 24) {
+      final h = diff.inHours;
+      return '$h ${h == 1 ? 'hour' : 'hours'} ago';
+    }
+
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dateDay = DateTime(date.year, date.month, date.day);
+    if (dateDay == yesterday) return 'Yesterday';
+
+    if (diff.inDays < 7) {
+      final d = diff.inDays;
+      return '$d ${d == 1 ? 'day' : 'days'} ago';
+    }
+
+    final month = _monthNames[date.month - 1];
+    return '${date.day} $month ${date.year}';
   }
 
   PopupMenuItem<SortOption> _buildSortMenuItem(
@@ -286,10 +342,31 @@ class _NotesListScreenState extends State<NotesListScreen> {
                           note.title,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Text(
-                          note.description,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
+                        subtitle: Builder(
+                          builder: (context) {
+                            final createdAtText = _formatRelativeTime(
+                              note.createdAt,
+                            );
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  note.description,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (createdAtText.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    createdAtText,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
                         ),
                         onTap: () {
                           Navigator.push(
