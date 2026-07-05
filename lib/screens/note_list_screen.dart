@@ -8,6 +8,7 @@ import 'add_edit_note_screen.dart';
 
 const List<String> filterCategories = [
   'All',
+  'Pinned',
   'General',
   'Study',
   'Work',
@@ -62,9 +63,14 @@ class _NotesListScreenState extends State<NotesListScreen> {
   }
 
   List<Note> _applyFilters(List<Note> notes) {
-    final byCategory = _selectedCategory == 'All'
-        ? notes
-        : notes.where((n) => n.category == _selectedCategory).toList();
+    // Pre-filter: Pinned-only view (UI mode, not a real category).
+    final byPin = _selectedCategory == 'Pinned'
+        ? notes.where((n) => n.isPinned).toList()
+        : notes;
+
+    final byCategory = _selectedCategory == 'All' || _selectedCategory == 'Pinned'
+        ? byPin
+        : byPin.where((n) => n.category == _selectedCategory).toList();
     return _filter(byCategory, _query);
   }
 
@@ -315,9 +321,14 @@ class _NotesListScreenState extends State<NotesListScreen> {
                 final filteredNotes = _applySort(_applyFilters(notes));
 
                 if (filteredNotes.isEmpty) {
-                  final message = _selectedCategory == 'All'
-                      ? 'No matching notes found.'
-                      : 'No notes found in this category.';
+                  final String message;
+                  if (_selectedCategory == 'Pinned') {
+                    message = 'No pinned notes yet.';
+                  } else if (_selectedCategory == 'All') {
+                    message = 'No matching notes found.';
+                  } else {
+                    message = 'No notes found in this category.';
+                  }
                   return Center(child: Text(message));
                 }
 
