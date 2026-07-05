@@ -166,9 +166,7 @@ class _NoteDetailsScreenState extends State<NoteDetailsScreen> {
               IconButton(
                 tooltip: note.isPinned ? 'Unpin note' : 'Pin note',
                 icon: Icon(
-                  note.isPinned
-                      ? Icons.push_pin
-                      : Icons.push_pin_outlined,
+                  note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
                 ),
                 onPressed: () => _togglePin(context, note),
               ),
