@@ -116,10 +116,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Stat counts
                 final total = notes.length;
                 final pinned = notes.where((n) => n.isPinned).length;
-                const archived = 0; // archive support not yet in the data model
                 final categories = <String>{
                   for (final n in notes) n.category,
                 }.length;
+                final sevenDaysAgo =
+                    DateTime.now().subtract(const Duration(days: 7));
+                final recentlyUpdated = notes.where((n) {
+                  final u = n.updatedAt;
+                  return u != null && u.isAfter(sevenDaysAgo);
+                }).length;
 
                 // Recent activity: 5 most-recently-updated notes
                 final recent = [...notes]..sort((a, b) {
@@ -170,10 +175,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(
                               width: tileWidth,
-                              child: const _StatCard(
+                              child: _StatCard(
                                 icon: Icons.archive_outlined,
                                 title: 'Archived Notes',
-                                value: '$archived',
+                                value: '$recentlyUpdated',
                               ),
                             ),
                           ],
