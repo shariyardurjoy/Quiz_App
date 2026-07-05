@@ -7,6 +7,7 @@ class Note {
   final String category;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final bool isPinned;
 
   Note({
     this.id,
@@ -15,6 +16,7 @@ class Note {
     required this.category,
     this.createdAt,
     this.updatedAt,
+    required this.isPinned,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,6 +24,7 @@ class Note {
       'title': title,
       'description': description,
       'category': category,
+      'isPinned': isPinned,
     };
     if (createdAt != null) {
       map['createdAt'] = Timestamp.fromDate(createdAt!);
@@ -42,6 +45,7 @@ class Note {
       category: data['category'] ?? 'General',
       createdAt: _toDate(data['createdAt']),
       updatedAt: _toDate(data['updatedAt']),
+      isPinned: data['isPinned'] ?? false,
     );
   }
 

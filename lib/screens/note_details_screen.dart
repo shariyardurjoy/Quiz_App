@@ -80,7 +80,8 @@ class NoteDetailsScreen extends StatelessWidget {
     return '$day $month $year, $hour12:$minute $period';
   }
 
-  Widget _metaRow(BuildContext context, {
+  Widget _metaRow(
+    BuildContext context, {
     required String label,
     required String value,
   }) {
