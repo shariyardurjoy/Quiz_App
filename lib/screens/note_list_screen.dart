@@ -6,6 +6,16 @@ import '../models/note.dart';
 import '../services/firestore_service.dart';
 import 'add_edit_note_screen.dart';
 
+const List<String> filterCategories = [
+  'All',
+  'General',
+  'Study',
+  'Work',
+  'Personal',
+  'Ideas',
+  'Shopping',
+];
+
 class NotesListScreen extends StatefulWidget {
   const NotesListScreen({super.key});
 
@@ -20,6 +30,7 @@ class _NotesListScreenState extends State<NotesListScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   String _query = '';
+  String _selectedCategory = 'All';
 
   @override
   void initState() {
@@ -45,6 +56,13 @@ class _NotesListScreenState extends State<NotesListScreen> {
       return n.title.toLowerCase().contains(q) ||
           n.description.toLowerCase().contains(q);
     }).toList();
+  }
+
+  List<Note> _applyFilters(List<Note> notes) {
+    final byCategory = _selectedCategory == 'All'
+        ? notes
+        : notes.where((n) => n.category == _selectedCategory).toList();
+    return _filter(byCategory, _query);
   }
 
   Future<void> _confirmDelete(Note note) async {
@@ -98,6 +116,28 @@ class _NotesListScreenState extends State<NotesListScreen> {
       ),
       body: Column(
         children: [
+          SizedBox(
+            height: 52,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              itemCount: filterCategories.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final category = filterCategories[index];
+                final isSelected = _selectedCategory == category;
+                return FilterChip(
+                  label: Text(category),
+                  selected: isSelected,
+                  onSelected: (_) {
+                    setState(() {
+                      _selectedCategory = category;
+                    });
+                  },
+                );
+              },
+            ),
+          ),
           if (_isSearching)
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -116,68 +156,80 @@ class _NotesListScreenState extends State<NotesListScreen> {
             ),
           Expanded(
             child: StreamBuilder<List<Note>>(
-        stream: _notesStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+              stream: _notesStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-                style: const TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      snapshot.error.toString(),
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
 
-          final notes = snapshot.data ?? const <Note>[];
+                final notes = snapshot.data ?? const <Note>[];
 
-          if (notes.isEmpty) {
-            return const Center(child: Text('No notes yet'));
-          }
+                if (notes.isEmpty) {
+                  return const Center(child: Text('No notes yet'));
+                }
 
-          return ListView.builder(
-            itemCount: notes.length,
-            itemBuilder: (context, index) {
-              final note = notes[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  title: Text(
-                    note.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    note.description,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AddEditNoteScreen(note: note),
+                final filteredNotes = _applyFilters(notes);
+
+                if (filteredNotes.isEmpty) {
+                  final message = _selectedCategory == 'All'
+                      ? 'No matching notes found.'
+                      : 'No notes found in this category.';
+                  return Center(child: Text(message));
+                }
+
+                return ListView.builder(
+                  itemCount: filteredNotes.length,
+                  itemBuilder: (context, index) {
+                    final note = filteredNotes[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          note.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          note.description,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AddEditNoteScreen(note: note),
+                            ),
+                          );
+                        },
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _confirmDelete(note),
+                        ),
                       ),
                     );
                   },
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => _confirmDelete(note),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

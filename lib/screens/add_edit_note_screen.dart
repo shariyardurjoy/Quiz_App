@@ -3,6 +3,15 @@ import 'package:flutter/material.dart';
 import '../models/note.dart';
 import '../services/firestore_service.dart';
 
+const List<String> categories = [
+  'General',
+  'Study',
+  'Work',
+  'Personal',
+  'Ideas',
+  'Shopping',
+];
+
 class AddEditNoteScreen extends StatefulWidget {
   final Note? note;
 
@@ -18,6 +27,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
 
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
+  String _selectedCategory = 'General';
 
   @override
   void initState() {
@@ -25,6 +35,9 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
     _titleController = TextEditingController(text: widget.note?.title ?? '');
     _descriptionController =
         TextEditingController(text: widget.note?.description ?? '');
+    if (widget.note != null) {
+      _selectedCategory = widget.note!.category;
+    }
   }
 
   @override
@@ -41,6 +54,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
       final note = Note(
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
+        category: _selectedCategory,
       );
       await _service.createNote(note);
     } else {
@@ -48,6 +62,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
         id: widget.note!.id,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
+        category: _selectedCategory,
       );
       await _service.updateNote(note);
     }
@@ -97,6 +112,34 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Description cannot be empty';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
+                items: categories
+                    .map(
+                      (c) => DropdownMenuItem<String>(
+                        value: c,
+                        child: Text(c),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a category';
                   }
                   return null;
                 },

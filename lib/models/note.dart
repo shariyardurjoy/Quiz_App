@@ -4,17 +4,20 @@ class Note {
   final String? id;
   final String title;
   final String description;
+  final String category;
 
   Note({
     this.id,
     required this.title,
     required this.description,
+    required this.category,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
       'description': description,
+      'category': category,
     };
   }
 
@@ -25,6 +28,7 @@ class Note {
       id: doc.id,
       title: data['title'] ?? '',
       description: data['description'] ?? '',
+      category: data['category'] ?? 'General',
     );
   }
 }
