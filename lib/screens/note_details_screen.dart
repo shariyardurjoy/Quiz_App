@@ -50,6 +50,68 @@ class NoteDetailsScreen extends StatelessWidget {
     );
   }
 
+  static const List<String> _monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  String _formatDateTime(DateTime? date) {
+    if (date == null) return 'Not available';
+    final day = date.day.toString().padLeft(2, '0');
+    final month = _monthNames[date.month - 1];
+    final year = date.year.toString();
+
+    final hour24 = date.hour;
+    final hour12Raw = hour24 % 12;
+    final hour12 = hour12Raw == 0 ? 12 : hour12Raw;
+    final minute = date.minute.toString().padLeft(2, '0');
+    final period = hour24 < 12 ? 'AM' : 'PM';
+
+    return '$day $month $year, $hour12:$minute $period';
+  }
+
+  Widget _metaRow(BuildContext context, {
+    required String label,
+    required String value,
+  }) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: muted,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,6 +148,19 @@ class NoteDetailsScreen extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            _metaRow(
+              context,
+              label: 'Created',
+              value: _formatDateTime(note.createdAt),
+            ),
+            _metaRow(
+              context,
+              label: 'Last updated',
+              value: _formatDateTime(note.updatedAt),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
