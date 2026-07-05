@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'add_edit_note_screen.dart';
 import 'notes_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -59,10 +60,17 @@ class HomeScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 12),
-                    const _QuickActionButton(
+                    _QuickActionButton(
                       icon: Icons.add_circle_outline,
                       label: 'Create New Note',
-                      onPressed: null,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AddEditNoteScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
